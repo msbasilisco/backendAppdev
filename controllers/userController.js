@@ -1,7 +1,9 @@
 const userModel = require('../models/userModel');
+const jwt = require('jsonwebtoken');
+const secretKey = 'hello123!';
 
 const register = (req, res)=>{
-    const{username, password} = req.body;
+    const{email,username, password} = req.body;
 
     const existingUser = userModel.findUser(username);
     if(existingUser){
@@ -15,21 +17,40 @@ const register = (req, res)=>{
 
 
 const login = (req, res)=>{
-    const{username, password}= req.body;
+    const{email, password}= req.body;
 
-    const user = userModel.findUser(username);
+    const user = userModel.findUser(email);
 
     if(!user){
         return res.status(401).json({message: 'User not found'});
     }
 
-    if(userModel.verifyPassword(username,password)){
-        return res.status(201).json({message: 'Login Sucessfully!'});
+    if(!userModel.verifyPassword(email, password)){
+        return res.status(401).json({message: 'Credentials invalid'});
+
     }
+
+    const token = jwt.sign({id:user.id, email:user.email}, secretKey,{expires: '1h'});
+    return res.status(200).json({message: 'Login Sucessfully!',token});
+};
+
+const getProfile = (req, res)=>{
+    const user = userModel.findUser(req.user.email);
+
+    if(!user){
+        res.status(404).json({message: 'User not found'});
+    }
+
+    req.status(201).json({
+        id: user.id,
+        email: user.email,
+        username: user.username
+    });
 }
 
 
 module.export = {
     register, 
-    login
+    login,
+    getProfile
 };
