@@ -5,7 +5,7 @@ const authenticateToken = (req, res, next) => {
 
     const authHeader = req.headers['authorization'];
     if(authHeader && authHeader.startsWith('Bearer ')){
-        const token = authHeader.replace('Bearer', '');
+        const token = authHeader.split(' ')[1];
 
         if(!token){
             return res.sendStatus(401);

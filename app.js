@@ -1,16 +1,15 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const userRoutes = require('./routes/user');
 const rateLimitMiddleware = require('./middleware/rateLimitMiddleware');
 const app = express();
 
-app.use(bodyParser.json());
-app.use(rateLimitMiddleware);
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+// Remove the global application of rateLimitMiddleware
+app.use(express.urlencoded({ extended: true }));
 app.use('/api/users', userRoutes);
 
+const port = process.env.PORT || 3002;
 
-app.listen(3000, ()=>{
-    console.log('Server running on port 3000');
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
 });

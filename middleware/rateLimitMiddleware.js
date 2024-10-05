@@ -1,12 +1,27 @@
-const rateLimit = require('express-rate-limit');
+const rateLimit = new Map();
 
-const limiter = rateLimit({
-    windowMs : 30 *1000,
-    message: {
-        message: "You have reached the limit of request, try again after 30 seconds."
-    },
-    header: true,
+function rateLimiter(req, res, next) {
+    const ip = req.ip;
+    const now = Date.now();
+    const windowStart = now - 30000;
 
-});
+    if (!rateLimit.has(ip)) {
+        rateLimit.set(ip, []);
+    }
 
-module.exports = limiter;
+    const requestTimeStamps = rateLimit.get(ip);
+    const requestsInWindow = requestTimeStamps.filter(timestamp => timestamp > windowStart);
+
+    if (requestsInWindow.length >= 5) {
+        return res.status(429).json({
+            error: 'You have reached the limit of requests. Please try again after 30 seconds'
+        });
+    }
+
+    requestTimeStamps.push(now);
+    rateLimit.set(ip, requestTimeStamps);
+
+    next();
+}
+
+module.exports = rateLimiter;

@@ -9,9 +9,10 @@ const register = (req, res)=>{
     if(existingUser){
         return res.status(400).json({message: 'This username already exist'})
     }
-
-    userModel.createUser(username, password);
-    return res.status(201).json({message: 'User account successfully created'});
+    
+    userModel.createUser(email, username, password);
+    return res.status(200).json({
+        message: 'User account successfully created'});
 
 }
 
@@ -26,11 +27,11 @@ const login = (req, res)=>{
     }
 
     if(!userModel.verifyPassword(email, password)){
-        return res.status(401).json({message: 'Credentials invalid'});
+        return res.status(401).json({message: 'Invalid Credentials'});
 
     }
 
-    const token = jwt.sign({id:user.id, email:user.email}, secretKey,{expires: '1h'});
+    const token = jwt.sign({id: user.id, email: user.email}, secretKey,{expiresIn: '1h'});
     return res.status(200).json({message: 'Login Sucessfully!',token});
 };
 
@@ -49,7 +50,7 @@ const getProfile = (req, res)=>{
 }
 
 
-module.export = {
+module.exports = {
     register, 
     login,
     getProfile
